@@ -10,7 +10,7 @@ Second, same the following script as plist.py
 
 Then, 
 ```
-python plist.py freeGifts
+python plist.py image
 ```
 
 It will generate lots of png files to a directory named freeGifts
