@@ -1,6 +1,6 @@
 # Sprite-Plist-Extractor
 
-*Requirement: python, PILLOW not PIL (because of transparent problems)*
+**Requirement: python, PILLOW not PIL (because of transparent problems)**
 
 I have written this script to unpack png files in the plist file packed by TexturePacker
 
