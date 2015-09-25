@@ -90,6 +90,52 @@ def frames_from_data(filename, format):
             frames[f["filename"]] = d
         json_data.close()
         return frames.items()
+    elif format == 'xml':
+        data_filename = filename + '.xml'
+        data = ElementTree.parse(data_filename).getroot()
+        print(data.get("imagePath"))
+        data2 = data.findall('SubTexture')
+        frames = {}
+        for f in data:
+            print(f.get('name'))
+            x = int(f.get('x'))
+            y = int(f.get('y'))
+           
+            if 'rotated' not in f.attrib:
+                rotated = False
+            else:
+                rotated = True
+
+            w = int(f.get('width'))
+            h = int(f.get('height'))
+
+            if 'frameHeight' in f.attrib:
+                real_w = int(f.get('frameHeight') if rotated else f.get('frameWidth'))
+                real_h = int(f.get('frameWidth') if rotated else f.get('frameHeight'))
+            else:
+                real_w = w;
+                real_h = h;
+            d = {
+                'box': (
+                    x,
+                    y,
+                    x + w,
+                    y + h
+                ),
+                'real_sizelist': [
+                    real_w,
+                    real_h
+                ],
+                'result_box': (
+                    int((real_w - w) / 2),
+                    int((real_h - h) / 2),
+                    int((real_w + w) / 2),
+                    int((real_h + h) / 2)
+                ),
+                'rotated': rotated
+            }
+            frames[f.get('name')] = d
+        return frames.items()
     elif format == 'cocos':
         data_filename = filename + ".plist"
         pl = plistlib.readPlist(data_filename)
@@ -133,6 +179,7 @@ def gen_png_from_data(filename, format):
     frames = frames_from_data(filename, format)
     for k, v in frames:
         frame = v
+        print v;
         box = frame['box']
         rect_on_big = big_image.crop(box)
         real_sizelist = frame['real_sizelist']
@@ -141,11 +188,12 @@ def gen_png_from_data(filename, format):
         result_image.paste(rect_on_big, result_box, mask=0)
         if frame['rotated']:
             result_image = result_image.rotate(90)
-        outfile = (filename + '/' + k).replace('gift_', '')
+        outfile = (filename + '/' + k).replace('gift_', '') + '.png'
         dirname = os.path.dirname(outfile)
         if not os.path.isdir(dirname):
             os.makedirs(dirname)
         print(outfile, "generated")
+        print result_image.format, result_image.size, result_image.mode
         result_image.save(outfile)
 
 
@@ -167,6 +215,9 @@ if __name__ == '__main__':
     elif format == 'json':
         ext = '.json'
         print(".json data format passed")
+    elif format == 'xml':
+        ext = '.xml'
+        print(".xml data format passed")
     elif format == 'cocos':
         print(".cocos data format passed")
     else:
